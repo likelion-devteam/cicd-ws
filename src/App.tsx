@@ -4,7 +4,7 @@ function App() {
   return (
     <main className="max-w-[932px] pb-8 pt-16 px-10">
       <h1 className="mb-6 text-4xl text-white md:text-6xl reckless">
-        Welcome to LIKELION
+        Welcome to Dev Team
       </h1>
       <p className="text-lg">Here are some ideas how to get started</p>
       <ul className="grid items-stretch gap-4 my-12 md:gap-1 md:grid-cols-2">
