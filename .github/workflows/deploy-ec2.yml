@@ -1,0 +1,48 @@
+name: Deploy to EC2
+
+env:
+  EC2_HOST: 13.209.76.91
+  EC2_USER: ec2-user
+  DEPLOY_PATH: /home/ec2-user/app
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ env.EC2_HOST }}
+
+      - name: Deploy to EC2
+        run: |
+          # Copy build files
+          scp -o StrictHostKeyChecking=no -r dist/* ${{ env.EC2_USER }}@${{ env.EC2_HOST }}:${{ env.DEPLOY_PATH }}
+
+          # Restart app with PM2
+          ssh -o StrictHostKeyChecking=no ${{ env.EC2_USER }}@${{ env.EC2_HOST }} '
+            cd ${{ env.DEPLOY_PATH }}
+            pm2 delete react-app 2>/dev/null || true
+            pm2 serve . 3000 --name "react-app" --spa
+          '
